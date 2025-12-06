@@ -5,4 +5,5 @@ SELECT
     isbn,
     publishing,
     available
-FROM book;
+FROM book
+WHERE id = :id;

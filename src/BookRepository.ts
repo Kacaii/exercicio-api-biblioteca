@@ -15,21 +15,10 @@ type Book = {
 
 export default class BookRepository {
   private queries: Map<SqlQuery, string>;
+
   constructor(opts: Opts) {
-    const queries: Map<SqlQuery, string> = new Map();
-
-    //   Store all queries in memory
-    for (const dirEntry of Deno.readDirSync(opts.queriesPath)) {
-      if (dirEntry.isDirectory || !dirEntry.name.endsWith(".sql")) continue;
-
-      const filePath = opts.queriesPath + `/${dirEntry.name}`;
-      const key = dirEntry.name.replace(".sql", "") as SqlQuery;
-      const value = Deno.readTextFileSync(filePath);
-
-      queries.set(key, value);
-    }
-
-    this.queries = queries;
+    //   Store queries in memory
+    this.queries = loadQueries(opts.queriesPath);
     opts.database.exec(this.queries.get("create")!);
   }
 
@@ -57,4 +46,23 @@ export default class BookRepository {
     c.status(200);
     return c.json(rows);
   }
+}
+
+/**   Load all SQL queries found in `path` */
+function loadQueries(path: string): Map<SqlQuery, string> {
+  //  0% 
+  const acc: Map<SqlQuery, string> = new Map();
+
+  for (const dirEntry of Deno.readDirSync(path)) {
+    if (dirEntry.isDirectory || !dirEntry.name.endsWith(".sql")) continue;
+
+    const filePath = path + `/${dirEntry.name}`;
+    const key = dirEntry.name.replace(".sql", "") as SqlQuery;
+    const value = Deno.readTextFileSync(filePath);
+
+    acc.set(key, value);
+  }
+
+  //  100% 
+  return acc;
 }
