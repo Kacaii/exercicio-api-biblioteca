@@ -4,7 +4,8 @@
     "jsr:@hono/hono@^4.10.7": "4.10.7",
     "jsr:@std/assert@1": "1.0.16",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "npm:sqlite@^5.1.1": "5.1.1"
+    "npm:@types/node@*": "24.2.0",
+    "npm:postgres@^3.4.7": "3.4.7"
   },
   "jsr": {
     "@hono/hono@4.10.7": {
@@ -21,15 +22,24 @@
     }
   },
   "npm": {
-    "sqlite@5.1.1": {
-      "integrity": "sha512-oBkezXa2hnkfuJwUo44Hl9hS3er+YFtueifoajrgidvqsJRQFpc5fKoAkAor1O5ZnLoa28GBScfHXs8j0K358Q=="
+    "@types/node@24.2.0": {
+      "integrity": "sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
+    "postgres@3.4.7": {
+      "integrity": "sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw=="
+    },
+    "undici-types@7.10.0": {
+      "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
     }
   },
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.10.7",
       "jsr:@std/assert@1",
-      "npm:sqlite@^5.1.1"
+      "npm:postgres@^3.4.7"
     ]
   }
 }

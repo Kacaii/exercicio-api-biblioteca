@@ -1,29 +1,26 @@
-import { DatabaseSync } from "node:sqlite";
+import { Context } from "@hono/hono";
+import sql from "./db.ts";
 
-type opts = { pathToQueries: string };
+type Opts = { pathToQueries: string };
+type SqlQuery = "insert_book";
 
-export class BookManager {
-  private queries: Map<string, string>;
+type Book = {
+  id: number;
+  title: string;
+  author: string;
+  isbn: string;
+  publishing: string;
+  available: boolean;
+};
 
-  constructor(opts: opts) {
-    const queries: Map<string, string> = new Map();
-    for (const entry of Deno.readDirSync(opts.pathToQueries)) {
-      if (entry.isDirectory) continue;
-      if (!entry.name.endsWith(".sql")) continue;
+export default class BookManager {
+  async addBook(c: Context) {
+    const body: Omit<Book, "id"> = await c.req.json();
 
-      const path = opts.pathToQueries + "/" + entry.name;
-
-      const value = Deno.readTextFileSync(path);
-      const key = entry.name.replaceAll(".sql", "");
-      queries.set(key, value);
-    }
-
-    this.queries = queries;
-  }
-
-  /**   Generate necessary tables */
-  createTables(db: DatabaseSync) {
-    const query = this.queries.get("create")!;
-    db.exec(query);
+    const result = await sql`
+        INSERT INTO livro (title, author, isbn, publishing, available)
+        VALUES ($title, $author, $isbn, $publishing, $available)
+        RETURNING id, title, author, isbn, publishing, available;
+        `;
   }
 }

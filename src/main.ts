@@ -1,13 +1,16 @@
 import { Hono } from "@hono/hono";
-import { DatabaseSync } from "node:sqlite";
-import { BookManager } from "./BookManager.ts";
+import BookManager from "./BookManager.ts";
+import postgres from "postgres";
 
 function main() {
   const app = new Hono();
-  const db = new DatabaseSync("src/sql/library.db");
+  const manager = new BookManager();
 
-  const manager = new BookManager({ pathToQueries: "src/sql" });
-  manager.createTables(db);
+  app.post("/book", async (c) => await manager.addBook(c, client));
+
+  Deno.serve(app.fetch);
 }
 
-if (import.meta.main) main();
+if (import.meta.main) {
+  main();
+}
