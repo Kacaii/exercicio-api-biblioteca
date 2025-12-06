@@ -13,7 +13,7 @@ type Book = {
   available: boolean;
 };
 
-export default class BookManager {
+export default class BookRepository {
   private queries: Map<SqlQuery, string>;
   constructor(opts: Opts) {
     const queries: Map<SqlQuery, string> = new Map();

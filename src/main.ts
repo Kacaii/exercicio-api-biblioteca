@@ -1,14 +1,19 @@
 import { Hono } from "@hono/hono";
 import { Database } from "@db/sqlite";
-import BookManager from "./BookManager.ts";
+import BookRepository from "./BookRepository.ts";
 
 function main() {
   const app = new Hono();
   const db = new Database(":memory:");
-  const manager = new BookManager({ database: db, queriesPath: "src/sql" });
+  const books = new BookRepository({ database: db, queriesPath: "src/sql" });
 
-  app.post("/book", async (c) => await manager.addBook(c, db));
+  //   ROUTER -----------------------------------------------------------------
+  app.post("/api/livros", async (c) => await books.addBook(c, db));
+  app.get("/api/livros", (c) => c.text("todo"));
+  app.put("/api/livros/{id}", (c) => c.text("todo"));
+  app.delete("/api/livros", (c) => c.text("todo"));
 
+  //   START
   Deno.serve(app.fetch);
 }
 
