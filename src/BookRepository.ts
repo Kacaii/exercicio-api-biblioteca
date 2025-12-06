@@ -2,7 +2,15 @@ import { Context } from "@hono/hono";
 import { Database } from "@db/sqlite";
 
 type Opts = { database: Database; queriesPath: string };
-type SqlQuery = "create" | "insert_book" | "get_all_books" | "get_book";
+
+/** 󱉯  Available SQL queries */
+type SqlQuery =
+  | "create"
+  | "insert_book"
+  | "get_all_books"
+  | "get_book"
+  | "delete_book"
+  | "update_book";
 
 type Book = {
   id: number;
@@ -13,11 +21,12 @@ type Book = {
   available: boolean;
 };
 
+/**   Handles Database queries */
 export default class BookRepository {
   private queries: Map<SqlQuery, string>;
 
   constructor(opts: Opts) {
-    //   Store queries in memory
+    //   Store available queries in memory
     this.queries = loadQueries(opts.queriesPath);
     opts.database.exec(this.queries.get("create")!);
   }
@@ -49,6 +58,66 @@ export default class BookRepository {
 
   getBook(c: Context, db: Database) {
     const query = this.queries.get("get_book")!;
+    const idParam = c.req.param("id");
+
+    try {
+      const bookId = parseInt(idParam);
+
+      using stmt = db.prepare(query);
+      const row = stmt.get({ id: bookId });
+
+      // 404 NOT FOUND
+      if (row === undefined) return c.notFound();
+
+      // 200 OK
+      c.status(200);
+      return c.json(row);
+    } catch {
+      // 400 Bad request
+      c.status(400);
+      return c.text("ID inválido");
+    }
+  }
+
+  async updateBook(c: Context, db: Database) {
+    const query = this.queries.get("delete_book")!;
+    const idParam = c.req.param("id");
+    const body: Omit<Book, "id"> = await c.req.json();
+
+    try {
+      const params: Book = {
+        id: parseInt(idParam),
+        author: body.author,
+        available: body.available,
+        isbn: body.isbn,
+        publishing: body.publishing,
+        title: body.title,
+      };
+
+      using stmt = db.prepare(query);
+      const row = stmt.get(params);
+
+      // 404 NOT FOUND
+      if (row === undefined) return c.notFound();
+
+      if (JSON.stringify(row) == JSON.stringify(params)) {
+        // 403 NOT MODIFIED
+        c.status(304);
+        return c.json(row);
+      }
+
+      // 200 OK
+      c.status(200);
+      return c.json(row);
+    } catch {
+      // 400 Bad request
+      c.status(400);
+      return c.text("ID inválido");
+    }
+  }
+
+  deleteBook(c: Context, db: Database) {
+    const query = this.queries.get("delete_book")!;
     const idParam = c.req.param("id");
 
     try {

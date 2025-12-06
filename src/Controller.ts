@@ -4,6 +4,7 @@ import BookRepository from "./BookRepository.ts";
 
 type Opts = { server: Hono; repo: BookRepository; db: Database };
 
+/** 󰩩  Handles incoming HTTP Requests */
 class Controller {
   private httpServer: Hono;
   private db: Database;
@@ -15,7 +16,7 @@ class Controller {
     this.repo = opts.repo;
   }
 
-  ///   Start redirecting the requests
+  /**   Start server */
   serveHttp() {
     const app = this.httpServer;
     const repo = this.repo;
@@ -24,8 +25,8 @@ class Controller {
     app.post("/api/livros", async (c) => await repo.addBook(c, db));
     app.get("/api/livros", (c) => repo.getAllBooks(c, db));
     app.get("/api/livros/:id", (c) => repo.getBook(c, db));
-    app.put("/api/livros/:id", (c) => c.text("todo"));
-    app.delete("/api/livros", (c) => c.text("todo"));
+    app.put("/api/livros/:id", (c) => repo.updateBook(c, db));
+    app.delete("/api/livros", (c) => repo.deleteBook(c, db));
 
     return app.fetch;
   }
