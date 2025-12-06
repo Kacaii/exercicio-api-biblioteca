@@ -1,12 +1,13 @@
 import { Hono } from "@hono/hono";
+import { Database } from "@db/sqlite";
 import BookManager from "./BookManager.ts";
-import postgres from "postgres";
 
 function main() {
   const app = new Hono();
-  const manager = new BookManager();
+  const db = new Database(":memory:");
+  const manager = new BookManager({ database: db });
 
-  app.post("/book", async (c) => await manager.addBook(c, client));
+  app.post("/book", async (c) => await manager.addBook(c, db));
 
   Deno.serve(app.fetch);
 }
