@@ -2,7 +2,7 @@ import { Context } from "@hono/hono";
 import { Database } from "@db/sqlite";
 
 type Opts = { database: Database; queriesPath: string };
-type SqlQuery = "create" | "insert_book";
+type SqlQuery = "create" | "insert_book" | "get_all_books";
 
 type Book = {
   id: number;
@@ -33,7 +33,7 @@ export default class BookRepository {
     opts.database.exec(this.queries.get("create")!);
   }
 
-  async addBook(c: Context, db: Database) {
+  async addBook(c: Context, db: Database): Promise<Response> {
     const body: Omit<Book, "id"> = await c.req.json();
     const query = this.queries.get("insert_book")!;
 
@@ -45,5 +45,16 @@ export default class BookRepository {
     //  201 CREATED
     c.status(201);
     return c.json(row);
+  }
+
+  getAllBooks(c: Context, db: Database) {
+    const query = this.queries.get("get_all_books")!;
+
+    using stmt = db.prepare(query);
+    const rows = stmt.all<Book>();
+
+    // 200 OK
+    c.status(200);
+    return c.json(rows);
   }
 }

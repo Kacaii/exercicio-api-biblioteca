@@ -9,7 +9,7 @@ function main() {
 
   //   ROUTER -----------------------------------------------------------------
   app.post("/api/livros", async (c) => await books.addBook(c, db));
-  app.get("/api/livros", (c) => c.text("todo"));
+  app.get("/api/livros", (c) => books.getAllBooks(c, db));
   app.put("/api/livros/{id}", (c) => c.text("todo"));
   app.delete("/api/livros", (c) => c.text("todo"));
 
