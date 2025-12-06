@@ -2,7 +2,7 @@ import { Context } from "@hono/hono";
 import { Database } from "@db/sqlite";
 
 type Opts = { database: Database; queriesPath: string };
-type SqlQuery = "create" | "insert_book" | "get_all_books";
+type SqlQuery = "create" | "insert_book" | "get_all_books" | "get_book";
 
 type Book = {
   id: number;
@@ -45,6 +45,29 @@ export default class BookRepository {
     // 200 OK
     c.status(200);
     return c.json(rows);
+  }
+
+  getBook(c: Context, db: Database) {
+    const query = this.queries.get("get_book")!;
+    const idParam = c.req.param("id");
+
+    try {
+      const bookId = parseInt(idParam);
+
+      using stmt = db.prepare(query);
+      const row = stmt.get({ id: bookId });
+
+      // 404 NOT FOUND
+      if (row === undefined) return c.notFound();
+
+      // 200 OK
+      c.status(200);
+      return c.json(row);
+    } catch {
+      // 400 Bad request
+      c.status(400);
+      return c.text("ID inválido");
+    }
   }
 }
 

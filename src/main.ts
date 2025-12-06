@@ -1,20 +1,16 @@
 import { Hono } from "@hono/hono";
 import { Database } from "@db/sqlite";
 import BookRepository from "./BookRepository.ts";
+import Controller from "./Controller.ts";
 
 function main() {
-  const app = new Hono();
+  const server = new Hono();
   const db = new Database(":memory:");
-  const books = new BookRepository({ database: db, queriesPath: "src/sql" });
-
-  //   ROUTER -----------------------------------------------------------------
-  app.post("/api/livros", async (c) => await books.addBook(c, db));
-  app.get("/api/livros", (c) => books.getAllBooks(c, db));
-  app.put("/api/livros/{id}", (c) => c.text("todo"));
-  app.delete("/api/livros", (c) => c.text("todo"));
+  const repo = new BookRepository({ database: db, queriesPath: "src/sql" });
+  const controller = new Controller({ server: server, repo: repo, db: db });
 
   //   START
-  Deno.serve(app.fetch);
+  Deno.serve(controller.serveHttp());
 }
 
 if (import.meta.main) main();
