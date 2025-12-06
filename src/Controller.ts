@@ -24,9 +24,9 @@ class Controller {
 
     app.post("/api/livros", async (c) => await repo.addBook(c, db));
     app.get("/api/livros", (c) => repo.getAllBooks(c, db));
-    app.get("/api/livros/:id", (c) => repo.getBook(c, db));
-    app.put("/api/livros/:id", (c) => repo.updateBook(c, db));
-    app.delete("/api/livros", (c) => repo.deleteBook(c, db));
+    app.get("/api/livros/:id", async (c) => await repo.getBook(c, db));
+    app.put("/api/livros/:id", async (c) => await repo.updateBook(c, db));
+    app.delete("/api/livros", async (c) => await repo.deleteBook(c, db));
 
     return app.fetch;
   }
