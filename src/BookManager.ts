@@ -1,8 +1,8 @@
 import { Context } from "@hono/hono";
 import { Database } from "@db/sqlite";
 
-type Opts = { database: Database };
-// type SqlQuery = "insert_book";
+type Opts = { database: Database; queriesPath: string };
+type SqlQuery = "create" | "insert_book";
 
 type Book = {
   id: number;
@@ -14,28 +14,36 @@ type Book = {
 };
 
 export default class BookManager {
+  private queries: Map<SqlQuery, string>;
   constructor(opts: Opts) {
-    opts.database.sql`
-      CREATE TABLE IF NOT EXISTS livro (
-          id INTEGER NOT NULL PRIMARY KEY,
-          title TEXT NOT NULL,
-          author TEXT NOT NULL,
-          isbn TEXT NOT NULL,
-          publishing DATE NOT NULL,
-          available BOOLEAN NOT NULL
-      );
-      `;
+    const queries: Map<SqlQuery, string> = new Map();
+
+    //   Store all queries in memory
+    for (const dirEntry of Deno.readDirSync(opts.queriesPath)) {
+      if (dirEntry.isDirectory || !dirEntry.name.endsWith(".sql")) continue;
+
+      const filePath = opts.queriesPath + `/${dirEntry.name}`;
+      const key = dirEntry.name.replace(".sql", "") as SqlQuery;
+      const value = Deno.readTextFileSync(filePath);
+
+      queries.set(key, value);
+    }
+
+    this.queries = queries;
+    opts.database.exec(this.queries.get("create")!);
   }
 
   async addBook(c: Context, db: Database) {
     const body: Omit<Book, "id"> = await c.req.json();
-    const results = db.sql`
-      INSERT INTO livro (title, author, isbn, publishing, available)
-      VALUES (${body.title}, ${body.author}, ${body.isbn}, ${body.publishing}, ${body.available})
-      RETURNING id, title, author, isbn, publishing, available;
-      `;
+    const query = this.queries.get("insert_book")!;
 
-    if (results.length === 0) return c.notFound();
-    return c.json(results);
+    using stmt = db.prepare(query);
+    const row = stmt.get(body);
+
+    if (row == undefined) return c.notFound();
+
+    //  201 CREATED
+    c.status(201);
+    return c.json(row);
   }
 }
