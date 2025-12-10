@@ -5,7 +5,7 @@ import BookRepository from "./BookRepository.ts";
 type Opts = { server: Hono; repo: BookRepository; db: Database };
 
 /** 󰩩  Handles incoming HTTP Requests */
-class Controller {
+export default class Controller {
   private httpServer: Hono;
   private db: Database;
   private repo: BookRepository;
@@ -31,5 +31,3 @@ class Controller {
     return app.fetch;
   }
 }
-
-export default Controller;
